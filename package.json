@@ -1,0 +1,29 @@
+{
+  "name": "Toronto-Star-News-Feed",
+  "version": "1.0.0",
+  "description": "A Nodejs web app that scrapes Toronto Star (https://www.thestar.com/) and displays abstracts of published news articles for the user to review and comment on",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muntasir2165/Toronto-Star-News-Feed.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/muntasir2165/Toronto-Star-News-Feed/issues"
+  },
+  "homepage": "https://github.com/muntasir2165/Toronto-Star-News-Feed#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cheerio": "^1.0.0-rc.2",
+    "express": "^4.16.4",
+    "express-handlebars": "^3.0.0",
+    "mongoose": "^5.3.4",
+    "request": "^2.88.0"
+  }
+}
