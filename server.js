@@ -72,10 +72,24 @@ app.get("/scrape-new-articles", function(req, res) {
               // console.log("subCategory: " + newArticle.subCategory);
               // console.log("isSaved: " + newArticle.isSaved);
               // console.log();
-              db.Article.create(newArticle)
-                .then(function(dbArticle) {
-                  // View the added result in the console
-                  console.log(dbArticle);
+              db.Article.find({"headline": newArticle.headline}).count()
+                .then(function(count) {
+                  if (count >= 1) {
+                    console.log("\nThe news article with the headline '" + newArticle.headline + "' has already been scraped!\n");
+                  } else {
+                    db.Article.create(newArticle)
+                      .then(function(dbArticle) {
+                        // View the added result in the console
+                        console.log("\nAdded the article with headline '" + dbArticle.headline + "' to the database!\n");
+                      })
+                      .catch(function(err) {
+                        // If an error occurred, send it to the client
+                        console.log("-".repeat(20));
+                        console.log(err);
+                        console.log("-".repeat(20));
+                        return res.json(err);
+                    });
+                  }
                 })
                 .catch(function(err) {
                   // If an error occurred, send it to the client

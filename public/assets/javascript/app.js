@@ -2,6 +2,8 @@ $(document).ready(function() {
   getNewsArticles(populateNewsContainer);
   scrapeNewArtiles();
   clearArticles();
+  saveArticleIconStyleToggleOnHover();
+  $("[data-toggle=\"tooltip\"]").tooltip();
 });
 
 function scrapeNewArtiles() {
@@ -65,16 +67,45 @@ function createArticleHtml(article) {
   var articleContainer = $("<div class=\"article border rounded m-1\">");
   articleContainer.append("<h4 class=\"article-headline\"><a href=\"" + article.url + "\" target=\"_blank\">" + article.headline + "</a></h4>");
   articleContainer.append("<p class=\"summary\">" + article.summary + "</p>");
+  articleContainer.append("<hr>");
   var innerRow = $("<div class=\"row\">");
-  innerRow.append("<div class=\"col-md-4\"><p class=\"category\">" + article.category + "</p></div>");
-  innerRow.append("<div class=\"col-md-4\"><p class=\"sub-category\">" + article.subCategory + "</p></div>");
+  innerRow.append("<div class=\"col-md-4\"><p class=\"category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Category\">" + article.category + "</p></div>");
+  innerRow.append("<div class=\"col-md-4\"><p class=\"sub-category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sub-category\">" + article.subCategory + "</p></div>");
   /*
   window.location.pathname
 "/saved-articles.html"
   */
-  innerRow.append("<div class=\"col-md-4\"><button type=\"button\" class=\"btn btn-warning save-article\" data-article-id=\"" + article._id + "\">Save Article!</button></div>");
+  if (!article.isSaved) {
+    innerRow.append("<div class=\"col-md-4\"><i class=\"fa fa-star-o fa-3x\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Save Article!\"></i></div>");
+  } else {
+    innerRow.append("<div class=\"col-md-4\"><i class=\"fa fa-star fa-3x\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Remove Article!\"></i></div>");
+  }
+
   articleContainer.append(innerRow);
   // articleContainer.append("<p>" + article.isSaved + "</p>");
   // articleContainer.append("<p>" + article._id + "</p>");
   return articleContainer;
+}
+
+function saveArticleIconStyleToggleOnHover() {
+  $(document).on("mouseenter", ".fa", function(event) {
+    console.log("inside mouseenter");
+    if ($(this).hasClass("fa-star")) {
+      $(this).removeClass("fa-star");
+      $(this).addClass("fa-star-o");
+    } else if ($(this).hasClass("fa-star-o")) {
+      $(this).removeClass("fa-star-o");
+      $(this).addClass("fa-star");
+    }
+  });
+  $(document).on("mouseleave", ".fa", function(event) {
+    console.log("inside mouseleave");
+    if ($(this).hasClass("fa-star")) {
+      $(this).removeClass("fa-star");
+      $(this).addClass("fa-star-o");
+    } else if ($(this).hasClass("fa-star-o")) {
+      $(this).removeClass("fa-star-o");
+      $(this).addClass("fa-star");
+    }
+  });
 }
