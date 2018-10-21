@@ -1,0 +1,122 @@
+/*The commented out block below was used for debugging the layout's paddings and margins*/
+/** {
+	border-width: 1px;
+	border-style: solid;
+	border-color: red;
+  }*/
+
+  body {
+    background-color: #aaaaaa;
+  }
+
+  .jumbotron {
+   /*  Background fallback in case of IE8 & down, or in case video doesn't load, such as with slower connections  */
+   background: url(../images/background-1.jpg) center center no-repeat fixed #464646;
+
+    /*This is what makes the background image rescale based on the container's size
+    Use vendor prefixes to support different browsers*/
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+
+    font-family: Serif, Monospace;
+    height: 400px;
+    width: auto;
+    opacity: 0.5;
+  }
+
+  .jumbotron h1, .jumbotron h2, .jumbotron h3 {
+    color: #000000;
+    font-weight: bold;
+    font-size: 56px;
+  }
+
+ /* .jumbotron:hover {
+    color: #ffffff;
+  }
+*/
+  .container {
+    padding-bottom: 24px;
+  }
+
+  .article {
+    background-color: #cccccc;
+  }
+
+ .article:hover {
+    background-color: #eeeeee;
+  }
+
+.article-headline {
+  background-color: #aaaaff;
+  padding: 10px;
+}
+
+.article-headline a{
+  color: #000000;
+  text-decoration: none; /* no underline */
+}
+
+.article-headline a:hover{
+  color: #555555;
+}
+
+/*.category, .sub-category {
+  margin: 0;
+}*/
+
+.save-article {
+  margin: 5px;
+}
+
+#scrape-new-articles, #clear-articles, .save-article {
+  text-transform: uppercase;
+}
+.footer {
+  color: #ffffff;
+}
+/*
+  .fa-pencil-square-o, .fa-trash {
+   cursor: pointer;
+ }
+ */
+/* input {
+  text-align: center;
+  }*/
+
+/*.feedback {
+  text-decoration: underline;
+  text-decoration-color: red;
+  }*/
+
+ /* #wrapper {
+    width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 5%;
+  }
+  #articles {
+    display: inline-block;
+    overflow: auto;
+    width: 60%;
+    height: 700px;
+  }
+  #notes {
+    float: right;
+    width: 30%;
+  }
+  textarea, input {
+    display: block;
+    width: 100%;
+    background-color: #FCF5C7;
+  }
+  input {
+    height: 36px;
+    font-size: 24px;
+  }
+  textarea {
+    height: 200px;
+    font-size: 18px;
+  }
+*/
