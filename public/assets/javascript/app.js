@@ -1,17 +1,18 @@
 $(document).ready(function() {
-  getNewsArticles(populateNewsContainer);
-  scrapeNewArtiles();
+  getNewsArticles();
+  scrapeNewArticles();
   clearArticles();
+  toggleArticleIsSavedState();
   saveArticleIconStyleToggleOnHover();
   $("[data-toggle=\"tooltip\"]").tooltip();
 });
 
-function scrapeNewArtiles() {
+function scrapeNewArticles() {
   $(document).on("click", "#scrape-new-articles", function(event) {
     $.ajax({
       url: "/scrape-new-articles",
       success: function() {
-        getNewsArticles(populateNewsContainer);
+        getNewsArticles();
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         alert("Sorry, invalid request.");
@@ -26,7 +27,7 @@ function clearArticles() {
     $.ajax({
       url: "/clear-articles",
       success: function() {
-        getNewsArticles(populateNewsContainer);
+        getNewsArticles();
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         alert("Sorry, invalid request.");
@@ -36,12 +37,17 @@ function clearArticles() {
   });
 }
 
-function getNewsArticles(populateNewsContainer) {
+function getNewsArticles() {
+  var articleSearchUrl = "/articles";
+  if (window.location.pathname === "/index.html") {
+    articleSearchUrl = "/articles/unsaved";
+  } else if (window.location.pathname === "/saved-articles.html") {
+    articleSearchUrl = "/articles/saved";
+  }
   $.ajax({
-    url: "/articles",
+    url: articleSearchUrl,
     success: function(articles) {
       populateNewsContainer(articles);
-      // console.log(articles);
     },
     error: function(XMLHttpRequest, textStatus, errorThrown) {
       alert("Sorry, invalid request.");
@@ -59,7 +65,12 @@ function populateNewsContainer(articles) {
       articleContainer.append(articleHtml);
     });
   } else {
-    articleContainer.append("<h3>Uh Oh. Looks like we don't have any new articles at this time.</h3>");
+      if (window.location.pathname === "/index.html") {
+        articleContainer.append("<h3>Uh Oh. Looks like we don't have any new articles at this time.</h3>");
+      } else if (window.location.pathname === "/saved-articles.html") {
+        articleContainer.append("<h3>Uh Oh. Looks like we don't have any saved articles at this time.</h3>");
+        articleContainer.append("<a href=\"./index.html\"><button type=\"button\" class=\"btn btn-primary\">Go Back to Homepage</button></a>");
+      }
   }
 }
 
@@ -71,10 +82,6 @@ function createArticleHtml(article) {
   var innerRow = $("<div class=\"row\">");
   innerRow.append("<div class=\"col-md-4\"><p class=\"category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Category\">" + article.category + "</p></div>");
   innerRow.append("<div class=\"col-md-4\"><p class=\"sub-category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sub-category\">" + article.subCategory + "</p></div>");
-  /*
-  window.location.pathname
-"/saved-articles.html"
-  */
   if (!article.isSaved) {
     innerRow.append("<div class=\"col-md-4\"><i class=\"fa fa-star-o fa-3x\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Save Article!\"></i></div>");
   } else {
@@ -82,14 +89,32 @@ function createArticleHtml(article) {
   }
 
   articleContainer.append(innerRow);
-  // articleContainer.append("<p>" + article.isSaved + "</p>");
-  // articleContainer.append("<p>" + article._id + "</p>");
+
   return articleContainer;
 }
 
+function toggleArticleIsSavedState() {
+  $(document).on("click", ".fa", function(event) {
+    var articleId = $(this).attr("data-article-id");
+    $.ajax({
+      url: "/articles/save-toggle",
+      type: "POST",
+      data: {"articleId": articleId},
+      success: function(result) {
+        console.log("Toggled the isSaved variable state of the articled with id: " + articleId);
+        getNewsArticles();
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        alert("Sorry, invalid request.");
+        console.log("textStatus: " + textStatus + " errorThrown: " + errorThrown);
+      }
+    });
+  });
+}
+
+
 function saveArticleIconStyleToggleOnHover() {
   $(document).on("mouseenter", ".fa", function(event) {
-    console.log("inside mouseenter");
     if ($(this).hasClass("fa-star")) {
       $(this).removeClass("fa-star");
       $(this).addClass("fa-star-o");
@@ -99,7 +124,6 @@ function saveArticleIconStyleToggleOnHover() {
     }
   });
   $(document).on("mouseleave", ".fa", function(event) {
-    console.log("inside mouseleave");
     if ($(this).hasClass("fa-star")) {
       $(this).removeClass("fa-star");
       $(this).addClass("fa-star-o");
