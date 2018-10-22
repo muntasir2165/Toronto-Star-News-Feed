@@ -5,6 +5,7 @@ $(document).ready(function() {
   toggleArticleIsSavedState();
   saveArticleIconStyleToggleOnHover();
   $("[data-toggle=\"tooltip\"]").tooltip();
+  showArticleComments();
 });
 
 function scrapeNewArticles() {
@@ -69,7 +70,7 @@ function populateNewsContainer(articles) {
         articleContainer.append("<h3>Uh Oh. Looks like we don't have any new articles at this time.</h3>");
       } else if (window.location.pathname === "/saved-articles.html") {
         articleContainer.append("<h3>Uh Oh. Looks like we don't have any saved articles at this time.</h3>");
-        articleContainer.append("<a href=\"./index.html\"><button type=\"button\" class=\"btn btn-primary\">Go Back to Homepage</button></a>");
+        articleContainer.append("<a href=\"./index.html\"><button type=\"button\" class=\"btn btn-primary\">Browse Scraped Articles</button></a>");
       }
   }
 }
@@ -80,12 +81,16 @@ function createArticleHtml(article) {
   articleContainer.append("<p class=\"summary\">" + article.summary + "</p>");
   articleContainer.append("<hr>");
   var innerRow = $("<div class=\"row\">");
-  innerRow.append("<div class=\"col-md-4\"><p class=\"category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Category\">" + article.category + "</p></div>");
-  innerRow.append("<div class=\"col-md-4\"><p class=\"sub-category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sub-category\">" + article.subCategory + "</p></div>");
-  if (!article.isSaved) {
-    innerRow.append("<div class=\"col-md-4\"><i class=\"fa fa-star-o fa-3x\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Save Article!\"></i></div>");
-  } else {
-    innerRow.append("<div class=\"col-md-4\"><i class=\"fa fa-star fa-3x\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Remove Article!\"></i></div>");
+
+  if (window.location.pathname === "/index.html") {
+    innerRow.append("<div class=\"col-md-4\"><p class=\"category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Category\">" + article.category + "</p></div>");
+    innerRow.append("<div class=\"col-md-4\"><p class=\"sub-category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sub-category\">" + article.subCategory + "</p></div>");
+    innerRow.append("<div class=\"col-md-4\"><i class=\"fa fa-star-o fa-3x save-article\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Save Article!\"></i></div>");
+  } else if (window.location.pathname === "/saved-articles.html") {
+    innerRow.append("<div class=\"col-md-3\"><p class=\"category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Category\">" + article.category + "</p></div>");
+    innerRow.append("<div class=\"col-md-3\"><p class=\"sub-category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sub-category\">" + article.subCategory + "</p></div>");
+    innerRow.append("<div class=\"col-md-3\"><i class=\"fa fa-star fa-3x save-article\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Remove Article!\"></i></div>");
+    innerRow.append("<div class=\"col-md-3\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Comment For The Article!\"><i class=\"fa fa-comments fa-3x\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"modal\" data-target=\"#comment-modal\"></i></div>");
   }
 
   articleContainer.append(innerRow);
@@ -94,14 +99,14 @@ function createArticleHtml(article) {
 }
 
 function toggleArticleIsSavedState() {
-  $(document).on("click", ".fa", function(event) {
+  $(document).on("click", ".save-article", function(event) {
     var articleId = $(this).attr("data-article-id");
     $.ajax({
       url: "/articles/save-toggle",
       type: "POST",
       data: {"articleId": articleId},
       success: function(result) {
-        console.log("Toggled the isSaved variable state of the articled with id: " + articleId);
+        console.log("Toggled the isSaved variable state of the article with id: " + articleId);
         getNewsArticles();
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -112,6 +117,32 @@ function toggleArticleIsSavedState() {
   });
 }
 
+function showArticleComments() {
+  $(document).on("click", ".fa-comments", function(event) {
+    var articleId = $(this).attr("data-article-id");
+    $("#comment-modal-title").text("Comments For Article: " + articleId);
+    $.ajax({
+      url: "/articles/comments/" + articleId,
+      success: function(articleWithPopulatedComments) {
+        console.log("Article with populated comments: " + JSON.stringify(articleWithPopulatedComments));
+        /*
+        sample output of the above console.log =>
+        Article with populated comments: {"comments":[{"_id":"5bcd6061266b142ff36a76b0","commentText":"This is the first comment","__v":0},{"_id":"5bcd60a685732f2ff5967abb","commentText":"This is the first comment","__v":0},{"_id":"5bcd615b684c942ffc4caf7a","commentText":"This is the first comment","__v":0},{"_id":"5bcd616b25f6a02ffea7ccb6","commentText":"This is the first comment","__v":0},{"_id":"5bcd618459ff0430016cd925","commentText":"This is the first comment","__v":0}],"_id":"5bcce82ec195d72e325f6ef1","headline":"‘We are more than mercury’: The youth from a place known for poisoned land and water are sending a message","summary":"The Anishinabek community in northwestern Ontario has been famous for the wrong reasons. Now its youth are sending a message to anyone willing to listen.","category":"NEWS","subCategory":"CANADA","isSaved":true,"url":"https://www.thestar.com/news/canada/2018/10/21/we-are-more-than-mercury-the-youth-from-a-place-known-for-poisoned-land-and-water-are-sending-a-message.html","__v":0}
+        */
+        var modalBody = $("#comment-modal-body");
+        modalBody.empty();
+        var commentsArray = articleWithPopulatedComments.comments;
+        commentsArray.forEach(function(comment) {
+          modalBody.append("<p>" + comment.commentText + "</p>");
+        });
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        alert("Sorry, invalid request.");
+        console.log("textStatus: " + textStatus + " errorThrown: " + errorThrown);
+      }
+    });
+  });
+}
 
 function saveArticleIconStyleToggleOnHover() {
   $(document).on("mouseenter", ".fa", function(event) {

@@ -69,7 +69,7 @@
   color: #ffffff;
 }
 
-.fa-star, .fa-star-o {
+.fa-star, .fa-star-o, .fa-comments {
   cursor: pointer;
   color: #000000;
 }

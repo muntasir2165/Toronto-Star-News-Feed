@@ -212,6 +212,58 @@ app.post("/articles/save-toggle", function(req, res) {
   });
 });
 
+// Route for grabbing a specific Article's comments
+app.get("/articles/comments/:articleId", function(req, res) {
+  // Using the articleId passed in the articleId parameter, prepare a query that finds the matching articleId in our db...
+  db.Article.findOne({ _id: req.params.articleId })
+    // ..and populate all of the comments associated with it
+    .populate("comments")
+    .then(function(dbArticle) {
+      // If we were able to successfully find an Article with the given id, send it back to the client
+      res.json(dbArticle);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
+
+app.get("/articles/test/comments/:articleId/", function(req, res) {
+  // Using the articleId passed in the articleId parameter, prepare a query that finds the matching article in our db...
+  db.Comment.create({ "commentText": "This is the first comment" })
+    .then(function(dbComment) {
+      // console.log(dbComment); //sample output =>  { _id: 5bcd60a685732f2ff5967abb, commentText: 'This is a comment', __v: 0 }
+      // If we were able to successfully find an Article with the given id, send it back to the client
+      return db.Article.findOneAndUpdate({ _id: req.params.articleId }, { $push: { comments: dbComment._id } }, { new: true }).populate("comments");
+    })
+    .then(function(dbArticle) {
+      // If we were able to successfully update an Article, send it back to the client
+      console.log("=====dbArticle: " + dbArticle);
+      /*sample output =>
+      { comments:
+       [ { _id: 5bcd6061266b142ff36a76b0,
+           commentText: 'This is a comment',
+           __v: 0 },
+         { _id: 5bcd60a685732f2ff5967abb,
+           commentText: 'This is another comment',
+           __v: 0 } ],
+      _id: 5bcce82ec195d72e325f6ef1,
+        headline: '‘We are more than mercury’: The youth from a place known for poisoned land and water are sending a message',
+      summary: 'The Anishinabek community in northwestern Ontario has been famous for the wrong reasons. Now its youth are sending a message to anyone willing to listen.',
+      category: 'NEWS',
+      subCategory: 'CANADA',
+      isSaved: true,
+      url: 'https://www.thestar.com/news/canada/2018/10/21/we-are-more-than-mercury-the-youth-from-a-place-known-for-poisoned-land-and-water-are-sending-a-message.html',
+      __v: 0 }
+  */
+      res.json(dbArticle);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
+
 // Route for saving/updating an Article's associated Comment
 app.post("/articles/:id", function(req, res) {
   // Create a new comment and pass the req.body to the entry
