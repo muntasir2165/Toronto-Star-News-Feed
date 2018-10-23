@@ -62,7 +62,7 @@
   margin: 5px;
 }
 
-#scrape-new-articles, #clear-articles {
+#scrape-new-articles, #clear-articles, #save-comment-submit {
   text-transform: uppercase;
 }
 .footer {

@@ -6,6 +6,7 @@ $(document).ready(function() {
   saveArticleIconStyleToggleOnHover();
   $("[data-toggle=\"tooltip\"]").tooltip();
   showArticleComments();
+  saveNewComment();
 });
 
 function scrapeNewArticles() {
@@ -90,7 +91,7 @@ function createArticleHtml(article) {
     innerRow.append("<div class=\"col-md-3\"><p class=\"category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Category\">" + article.category + "</p></div>");
     innerRow.append("<div class=\"col-md-3\"><p class=\"sub-category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sub-category\">" + article.subCategory + "</p></div>");
     innerRow.append("<div class=\"col-md-3\"><i class=\"fa fa-star fa-3x save-article\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Remove Article!\"></i></div>");
-    innerRow.append("<div class=\"col-md-3\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Comment For The Article!\"><i class=\"fa fa-comments fa-3x\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"modal\" data-target=\"#comment-modal\"></i></div>");
+    innerRow.append("<div class=\"col-md-3\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Comments For The Article!\"><i class=\"fa fa-comments fa-3x\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"modal\" data-target=\"#comment-modal\"></i></div>");
   }
 
   articleContainer.append(innerRow);
@@ -129,18 +130,41 @@ function showArticleComments() {
         sample output of the above console.log =>
         Article with populated comments: {"comments":[{"_id":"5bcd6061266b142ff36a76b0","commentText":"This is the first comment","__v":0},{"_id":"5bcd60a685732f2ff5967abb","commentText":"This is the first comment","__v":0},{"_id":"5bcd615b684c942ffc4caf7a","commentText":"This is the first comment","__v":0},{"_id":"5bcd616b25f6a02ffea7ccb6","commentText":"This is the first comment","__v":0},{"_id":"5bcd618459ff0430016cd925","commentText":"This is the first comment","__v":0}],"_id":"5bcce82ec195d72e325f6ef1","headline":"‘We are more than mercury’: The youth from a place known for poisoned land and water are sending a message","summary":"The Anishinabek community in northwestern Ontario has been famous for the wrong reasons. Now its youth are sending a message to anyone willing to listen.","category":"NEWS","subCategory":"CANADA","isSaved":true,"url":"https://www.thestar.com/news/canada/2018/10/21/we-are-more-than-mercury-the-youth-from-a-place-known-for-poisoned-land-and-water-are-sending-a-message.html","__v":0}
         */
-        var modalBody = $("#comment-modal-body");
-        modalBody.empty();
+        var commentListing = $("#comment-listing");
+        commentListing.empty();
         var commentsArray = articleWithPopulatedComments.comments;
         commentsArray.forEach(function(comment) {
-          modalBody.append("<p>" + comment.commentText + "</p>");
+          commentListing.append("<p>" + comment.commentText + "</p>");
         });
+        $("#new-comment").attr("data-article-id", articleId);
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         alert("Sorry, invalid request.");
         console.log("textStatus: " + textStatus + " errorThrown: " + errorThrown);
       }
     });
+  });
+}
+
+function saveNewComment() {
+  $(document).on("click", "#save-comment-submit", function(event) {
+    var newComment = $("#new-comment");
+    if (newComment.val()) {
+      var articleId = newComment.attr("data-article-id");
+      $.ajax({
+        url: "/articles/" + articleId,
+        type: "POST",
+        data: {"commentText": newComment.val().trim()},
+        success: function(articleWithUpdatedComments) {
+          console.log("Article with updated comments: " + JSON.stringify(articleWithUpdatedComments));
+          newComment.val("");
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          alert("Sorry, invalid request.");
+          console.log("textStatus: " + textStatus + " errorThrown: " + errorThrown);
+        }
+      });
+    }
   });
 }
 

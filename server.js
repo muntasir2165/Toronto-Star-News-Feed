@@ -264,15 +264,14 @@ app.get("/articles/test/comments/:articleId/", function(req, res) {
     });
 });
 
-// Route for saving/updating an Article's associated Comment
-app.post("/articles/:id", function(req, res) {
-  // Create a new comment and pass the req.body to the entry
-  db.Comment.create(req.body)
+// Route for saving a new comment for an Article
+app.post("/articles/:articleId", function(req, res) {
+  // Create a new comment and pass the req.body.commentText to the entry
+  db.Comment.create({"commentText": req.body.commentText})
     .then(function(dbComment) {
-      // If a Comment was created successfully, find one Article with an `_id` equal to `req.params.id`. Update the Article to be associated with the new Comment
+      // If a Comment was created successfully, find one Article with an `_id` equal to `req.params.articleId`. Update the Article to be associated with the new Comment
       // { new: true } tells the query that we want it to return the updated Article -- it returns the original by default
-      // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
-      return db.Article.findOneAndUpdate({ _id: req.params.id }, { $push: { comment: dbComment._id } }, { new: true });
+      return db.Article.findOneAndUpdate({ _id: req.params.articleId }, { $push: { comments: dbComment._id } }, { new: true }).populate("comments");
     })
     .then(function(dbArticle) {
       // If we were able to successfully update an Article, send it back to the client
