@@ -27,7 +27,15 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Connect to the Mongo DB
-mongoose.connect("mongodb://localhost/torontoStar", { useNewUrlParser: true });
+// mongoose.connect("mongodb://localhost/torontoStar", { useNewUrlParser: true });
+
+// If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/torontoStar";
+
+// Set mongoose to leverage built in JavaScript ES6 Promises
+// Connect to the Mongo DB
+mongoose.Promise = Promise;
+mongoose.connect(MONGODB_URI);
 
 // Routes
 
@@ -228,6 +236,8 @@ app.get("/articles/comments/:articleId", function(req, res) {
     });
 });
 
+/*
+//example route: http://localhost:3000/articles/comments/5bcce82ec195d72e325f6ef1/
 app.get("/articles/test/comments/:articleId/", function(req, res) {
   // Using the articleId passed in the articleId parameter, prepare a query that finds the matching article in our db...
   db.Comment.create({ "commentText": "This is the first comment" })
@@ -238,24 +248,24 @@ app.get("/articles/test/comments/:articleId/", function(req, res) {
     })
     .then(function(dbArticle) {
       // If we were able to successfully update an Article, send it back to the client
-      console.log("=====dbArticle: " + dbArticle);
-      /*sample output =>
-      { comments:
-       [ { _id: 5bcd6061266b142ff36a76b0,
-           commentText: 'This is a comment',
-           __v: 0 },
-         { _id: 5bcd60a685732f2ff5967abb,
-           commentText: 'This is another comment',
-           __v: 0 } ],
-      _id: 5bcce82ec195d72e325f6ef1,
-        headline: '‘We are more than mercury’: The youth from a place known for poisoned land and water are sending a message',
-      summary: 'The Anishinabek community in northwestern Ontario has been famous for the wrong reasons. Now its youth are sending a message to anyone willing to listen.',
-      category: 'NEWS',
-      subCategory: 'CANADA',
-      isSaved: true,
-      url: 'https://www.thestar.com/news/canada/2018/10/21/we-are-more-than-mercury-the-youth-from-a-place-known-for-poisoned-land-and-water-are-sending-a-message.html',
-      __v: 0 }
-  */
+      console.log("dbArticle: " + dbArticle);
+      // sample output =>
+      // { comments:
+      //  [ { _id: 5bcd6061266b142ff36a76b0,
+      //      commentText: 'This is a comment',
+      //      __v: 0 },
+      //    { _id: 5bcd60a685732f2ff5967abb,
+      //      commentText: 'This is another comment',
+      //      __v: 0 } ],
+      // _id: 5bcce82ec195d72e325f6ef1,
+      //   headline: '‘We are more than mercury’: The youth from a place known for poisoned land and water are sending a message',
+      // summary: 'The Anishinabek community in northwestern Ontario has been famous for the wrong reasons. Now its youth are sending a message to anyone willing to listen.',
+      // category: 'NEWS',
+      // subCategory: 'CANADA',
+      // isSaved: true,
+      // url: 'https://www.thestar.com/news/canada/2018/10/21/we-are-more-than-mercury-the-youth-from-a-place-known-for-poisoned-land-and-water-are-sending-a-message.html',
+      // __v: 0 }
+
       res.json(dbArticle);
     })
     .catch(function(err) {
@@ -263,9 +273,10 @@ app.get("/articles/test/comments/:articleId/", function(req, res) {
       res.json(err);
     });
 });
+*/
 
 // Route for saving a new comment for an Article
-app.post("/articles/:articleId", function(req, res) {
+app.post("/articles/new-comment/:articleId", function(req, res) {
   // Create a new comment and pass the req.body.commentText to the entry
   db.Comment.create({"commentText": req.body.commentText})
     .then(function(dbComment) {
@@ -275,6 +286,27 @@ app.post("/articles/:articleId", function(req, res) {
     })
     .then(function(dbArticle) {
       // If we were able to successfully update an Article, send it back to the client
+      res.json(dbArticle);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
+
+// Route for deleting a comment for an Article
+app.delete("/comments/delete-comment/:articleId/:commentId", function(req, res) {
+  // Create a new comment and pass the req.body.commentText to the entry
+  db.Comment.findOneAndDelete({ _id: req.params.commentId })
+    .then(function(result) {
+      console.log("--------deletion result: " + JSON.stringify(result));
+      // If a Comment was deleted successfully, find one Article with an `_id` equal to `req.params.articleId`. Update the Article by removing the deleted comment's id
+      // { new: true } tells the query that we want it to return the updated Article -- it returns the original by default
+      return db.Article.findOneAndUpdate({ _id: req.params.articleId }, { $pull: { comments: req.params.commendId } }, { new: true }).populate("comments");
+    })
+    .then(function(dbArticle) {
+      // If we were able to successfully update an Article, send it back to the client
+      console.log("--------deletion dbArticle: " + dbArticle);
       res.json(dbArticle);
     })
     .catch(function(err) {

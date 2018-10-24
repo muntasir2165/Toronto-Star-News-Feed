@@ -7,6 +7,7 @@ $(document).ready(function() {
   $("[data-toggle=\"tooltip\"]").tooltip();
   showArticleComments();
   saveNewComment();
+  deleteComment();
 });
 
 function scrapeNewArticles() {
@@ -134,7 +135,7 @@ function showArticleComments() {
         commentListing.empty();
         var commentsArray = articleWithPopulatedComments.comments;
         commentsArray.forEach(function(comment) {
-          commentListing.append("<p>" + comment.commentText + "</p>");
+          commentListing.append("<p>" + comment.commentText + "&nbsp;<button type=\"button\" class=\"btn btn-danger delete-comment\" data-article-id=\"" + articleId + "\" data-comment-id=\"" + comment._id + "\">X</button></p>");
         });
         $("#new-comment").attr("data-article-id", articleId);
       },
@@ -152,7 +153,7 @@ function saveNewComment() {
     if (newComment.val()) {
       var articleId = newComment.attr("data-article-id");
       $.ajax({
-        url: "/articles/" + articleId,
+        url: "/articles/new-comment/" + articleId,
         type: "POST",
         data: {"commentText": newComment.val().trim()},
         success: function(articleWithUpdatedComments) {
@@ -165,6 +166,28 @@ function saveNewComment() {
         }
       });
     }
+  });
+}
+
+function deleteComment() {
+  $(document).on("click", ".delete-comment", function(event) {
+    var commentId = $(this).attr("data-comment-id");
+    var articleId = $(this).attr("data-article-id");
+    var newComment = $("#new-comment");
+    var commentModal = $("#comment-modal");
+    $.ajax({
+      url: "/comments/delete-comment/" + articleId + "/" + commentId,
+      type: "DELETE",
+      success: function(articleWithUpdatedComments) {
+        console.log("Article with updated comments AFTER DELETION: " + JSON.stringify(articleWithUpdatedComments));
+        newComment.val("");
+        commentModal.modal('toggle');
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        alert("Sorry, invalid request.");
+        console.log("textStatus: " + textStatus + " errorThrown: " + errorThrown);
+      }
+    });
   });
 }
 
