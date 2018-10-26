@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/muntasir2165/Toronto-Star-News-Feed#readme",
   "dependencies": {
+    "bad-words": "^3.0.0",
     "body-parser": "^1.18.3",
     "cheerio": "^1.0.0-rc.2",
     "dotenv": "^6.1.0",

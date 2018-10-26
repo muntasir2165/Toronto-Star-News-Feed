@@ -1,6 +1,7 @@
 $(document).ready(function() {
   getNewsArticles();
   scrapeNewArticles();
+  clearSavedArticles();
   clearArticles();
   toggleArticleIsSavedState();
   saveArticleIconStyleToggleOnHover();
@@ -25,10 +26,27 @@ function scrapeNewArticles() {
   });
 }
 
+function clearSavedArticles() {
+  $(document).on("click", "#clear-saved-articles", function(event) {
+    $.ajax({
+      url: "/clear-saved-articles",
+      type: "PUT",
+      success: function() {
+        getNewsArticles();
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        alert("Sorry, invalid request.");
+        console.log("textStatus: " + textStatus + " errorThrown: " + errorThrown);
+      }
+    });
+  });
+}
+
 function clearArticles() {
   $(document).on("click", "#clear-articles", function(event) {
     $.ajax({
       url: "/clear-articles",
+      type: "DELETE",
       success: function() {
         getNewsArticles();
       },
@@ -79,7 +97,7 @@ function populateNewsContainer(articles) {
 
 function createArticleHtml(article) {
   var articleContainer = $("<div class=\"article border rounded m-1\">");
-  articleContainer.append("<h4 class=\"article-headline\"><a href=\"" + article.url + "\" target=\"_blank\">" + article.headline + "</a></h4>");
+  articleContainer.append("<h4 class=\"headline\"><a href=\"" + article.url + "\" target=\"_blank\">" + article.headline + "</a></h4>");
   articleContainer.append("<p class=\"summary\">" + article.summary + "</p>");
   articleContainer.append("<hr>");
   var innerRow = $("<div class=\"row\">");

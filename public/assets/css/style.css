@@ -44,17 +44,17 @@
     background-color: #eeeeee;
   }
 
-.article-headline {
+.headline {
   background-color: #aaaabb;
   padding: 10px;
 }
 
-.article-headline a{
+.headline a {
   color: #000000;
   text-decoration: none; /* no underline */
 }
 
-.article-headline a:hover{
+.headline a:hover, .summary:hover, .category:hover, .sub-category:hover {
   color: #555555;
 }
 
@@ -62,7 +62,7 @@
   margin: 5px;
 }
 
-#scrape-new-articles, #clear-articles, #save-comment-submit {
+#scrape-new-articles, #clear-saved-articles, #clear-articles, #save-comment-submit {
   text-transform: uppercase;
 }
 .footer {
