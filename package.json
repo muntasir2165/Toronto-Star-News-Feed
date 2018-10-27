@@ -1,7 +1,7 @@
 {
   "name": "Toronto-Star-News-Feed",
   "version": "1.0.0",
-  "description": "A Nodejs web app that scrapes Toronto Star (https://www.thestar.com/) and displays abstracts of published news articles for the user to review and comment on",
+  "description": "A Nodejs web app that scrapes Toronto Star (https://www.thestar.com/) and displays summaries of published news articles for the user to review and comment on",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -25,7 +25,7 @@
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "express-handlebars": "^3.0.0",
-    "mongoose": "^5.3.4",
+    "mongoose": "^5.3.7",
     "morgan": "^1.9.1",
     "request": "^2.88.0"
   }

@@ -16,7 +16,9 @@ function scrapeNewArticles() {
     $.ajax({
       url: "/scrape-new-articles",
       success: function() {
-        getNewsArticles();
+        // getNewsArticles();
+        // Reload the page to get the updated listing of articles
+        location.reload();
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         alert("Sorry, invalid request.");
@@ -60,9 +62,9 @@ function clearArticles() {
 
 function getNewsArticles() {
   var articleSearchUrl = "/articles";
-  if (window.location.pathname === "/index.html") {
+  if (window.location.pathname === "/") {
     articleSearchUrl = "/articles/unsaved";
-  } else if (window.location.pathname === "/saved-articles.html") {
+  } else if (window.location.pathname === "/saved-articles") {
     articleSearchUrl = "/articles/saved";
   }
   $.ajax({
@@ -86,11 +88,11 @@ function populateNewsContainer(articles) {
       articleContainer.append(articleHtml);
     });
   } else {
-      if (window.location.pathname === "/index.html") {
+      if (window.location.pathname === "/") {
         articleContainer.append("<h3>Uh Oh. Looks like we don't have any new articles at this time.</h3>");
-      } else if (window.location.pathname === "/saved-articles.html") {
+      } else if (window.location.pathname === "/saved-articles") {
         articleContainer.append("<h3>Uh Oh. Looks like we don't have any saved articles at this time.</h3>");
-        articleContainer.append("<a href=\"./index.html\"><button type=\"button\" class=\"btn btn-primary\">Browse Scraped Articles</button></a>");
+        articleContainer.append("<a href=\"/\"><button type=\"button\" class=\"btn btn-primary\">Browse Scraped Articles</button></a>");
       }
   }
 }
@@ -102,11 +104,11 @@ function createArticleHtml(article) {
   articleContainer.append("<hr>");
   var innerRow = $("<div class=\"row\">");
 
-  if (window.location.pathname === "/index.html") {
+  if (window.location.pathname === "/") {
     innerRow.append("<div class=\"col-md-4\"><p class=\"category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Category\">" + article.category + "</p></div>");
     innerRow.append("<div class=\"col-md-4\"><p class=\"sub-category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sub-category\">" + article.subCategory + "</p></div>");
     innerRow.append("<div class=\"col-md-4\"><i class=\"fa fa-star-o fa-3x save-article\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Save Article!\"></i></div>");
-  } else if (window.location.pathname === "/saved-articles.html") {
+  } else if (window.location.pathname === "/saved-articles") {
     innerRow.append("<div class=\"col-md-3\"><p class=\"category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Category\">" + article.category + "</p></div>");
     innerRow.append("<div class=\"col-md-3\"><p class=\"sub-category\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sub-category\">" + article.subCategory + "</p></div>");
     innerRow.append("<div class=\"col-md-3\"><i class=\"fa fa-star fa-3x save-article\" aria-hidden=\"true\" data-article-id=\"" + article._id + "\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Remove Article!\"></i></div>");
@@ -123,7 +125,7 @@ function toggleArticleIsSavedState() {
     var articleId = $(this).attr("data-article-id");
     $.ajax({
       url: "/articles/save-toggle",
-      type: "POST",
+      type: "PUT",
       data: {"articleId": articleId},
       success: function(result) {
         console.log("Toggled the isSaved variable state of the article with id: " + articleId);
@@ -144,7 +146,7 @@ function showArticleComments() {
     $.ajax({
       url: "/articles/comments/" + articleId,
       success: function(articleWithPopulatedComments) {
-        console.log("Article with populated comments: " + JSON.stringify(articleWithPopulatedComments));
+        // console.log("Article with populated comments: " + JSON.stringify(articleWithPopulatedComments));
         /*
         sample output of the above console.log =>
         Article with populated comments: {"comments":[{"_id":"5bcd6061266b142ff36a76b0","commentText":"This is the first comment","__v":0},{"_id":"5bcd60a685732f2ff5967abb","commentText":"This is the first comment","__v":0},{"_id":"5bcd615b684c942ffc4caf7a","commentText":"This is the first comment","__v":0},{"_id":"5bcd616b25f6a02ffea7ccb6","commentText":"This is the first comment","__v":0},{"_id":"5bcd618459ff0430016cd925","commentText":"This is the first comment","__v":0}],"_id":"5bcce82ec195d72e325f6ef1","headline":"‘We are more than mercury’: The youth from a place known for poisoned land and water are sending a message","summary":"The Anishinabek community in northwestern Ontario has been famous for the wrong reasons. Now its youth are sending a message to anyone willing to listen.","category":"NEWS","subCategory":"CANADA","isSaved":true,"url":"https://www.thestar.com/news/canada/2018/10/21/we-are-more-than-mercury-the-youth-from-a-place-known-for-poisoned-land-and-water-are-sending-a-message.html","__v":0}
@@ -175,7 +177,7 @@ function saveNewComment() {
         type: "POST",
         data: {"commentText": newComment.val().trim()},
         success: function(articleWithUpdatedComments) {
-          console.log("Article with updated comments: " + JSON.stringify(articleWithUpdatedComments));
+          // console.log("Article with updated comments: " + JSON.stringify(articleWithUpdatedComments));
           newComment.val("");
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -197,9 +199,9 @@ function deleteComment() {
       url: "/comments/delete-comment/" + articleId + "/" + commentId,
       type: "DELETE",
       success: function(articleWithUpdatedComments) {
-        console.log("Article with updated comments AFTER DELETION: " + JSON.stringify(articleWithUpdatedComments));
+        // console.log("Article with updated comments AFTER DELETION: " + JSON.stringify(articleWithUpdatedComments));
         newComment.val("");
-        commentModal.modal('toggle');
+        commentModal.modal("toggle");
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         alert("Sorry, invalid request.");

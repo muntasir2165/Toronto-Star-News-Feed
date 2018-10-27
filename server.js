@@ -1,13 +1,15 @@
 require("dotenv").config();
 var express = require("express");
-var logger = require("morgan");
+var exphbs = require("express-handlebars");
 var mongoose = require("mongoose");
+var bodyParser = require("body-parser");
+var logger = require("morgan");
 var Filter = require('bad-words');
 var filter = new Filter();
 
 // Our scraping tools
-var request = require("request");
 var cheerio = require("cheerio");
+var request = require("request");
 
 // Require all models
 var db = require("./models");
@@ -22,24 +24,36 @@ var app = express();
 app.use(logger("dev"));
 
 // Parse request body as JSON
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // Make public a static folder
 app.use(express.static("public"));
 
-// Connect to the Mongo DB
-// mongoose.connect("mongodb://localhost/torontoStar", { useNewUrlParser: true });
+// Set Handlebars
+var exphbs = require("express-handlebars");
 
-// If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
+
+// If deployed, use the deployed database. Otherwise use the local torontoStar database
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/torontoStar";
 
 // Set mongoose to leverage built-in JavaScript ES6 Promises
 mongoose.Promise = Promise;
+
 // Connect to the Mongo DB
 mongoose.connect(MONGODB_URI);
 
 // Routes
+// Load homepage (index)
+app.get("/", function (req, res) {
+  res.render("index");
+});
+
+app.get("/saved-articles", function (req, res) {
+  res.render("saved-articles");
+});
 
 // A GET route for scraping the Toronto Star website
 app.get("/scrape-new-articles", function(req, res) {
@@ -96,10 +110,9 @@ app.get("/scrape-new-articles", function(req, res) {
           }
         }
        });
-      // If we were able to successfully scrape and save an Article, send a message to the client
-      res.send("Scrape Complete");
+      // If we were able to successfully scrape and save Articles, send a message to the client
+      res.send("Scrape complete");
     } else {
-      // console.log("\nSorry, invalid request.\n" + "ERROR: " + error);
       logger.error("\nSorry, invalid request.\n" + "ERROR: " + error);
     }
   });
@@ -120,9 +133,9 @@ app.get("/articles", function(req, res) {
     });
 });
 
-// Route for getting all unsaved Articles from the db
+// Route for getting all of the unsaved Articles from the db
 app.get("/articles/unsaved", function(req, res) {
-  // Grab every document in the Articles collection that were not saved
+  // Grab every document in the Articles collection that are not saved
   db.Article.find({"isSaved": false})
     .then(function(dbArticles) {
       res.json(dbArticles);
@@ -133,7 +146,7 @@ app.get("/articles/unsaved", function(req, res) {
     });
 });
 
-// Route for getting all saved Articles from the db
+// Route for getting all of the saved Articles from the db
 app.get("/articles/saved", function(req, res) {
   // Grab every document in the Articles collection that were previously saved by user(s)
   db.Article.find({"isSaved": true})
@@ -153,9 +166,9 @@ app.delete("/clear-articles", function(req, res) {
       console.log("\nAll the scraped articles have been deleted from the database\n");
       db.Comment.remove({})
         .then(function(result) {
-          console.log("\nAll the comments associated with the scraped articles have been deleted from the database\n");
+          console.log("\nAll the comments associated with the scraped articles have akso been deleted from the database\n");
         // If we were able to successfully delete all Articles and their associated Comments, send a message to the client
-        res.send("Deletion complete!");
+        res.send("All of the scraped articles have been cleared/deleted!");
       });
     })
     .catch(function(error) {
@@ -165,7 +178,7 @@ app.delete("/clear-articles", function(req, res) {
   });
 });
 
-// A PUT route for updating the "isSaved" property value all of the scraped articles that were previously saved by users from "true" to "false"
+// A PUT route for updating the "isSaved" property value of all of the scraped articles (that were previously saved by users) from "true" to "false"
 app.put("/clear-saved-articles", function(req, res) {
     db.Article.find({"isSaved": true})
     .then(function(dbArticles) {
@@ -187,33 +200,16 @@ app.put("/clear-saved-articles", function(req, res) {
     });
 });
 
-
-// Route for grabbing a specific Article by id, populate it with it's comment(s)
-// app.get("/articles/:id", function(req, res) {
-//   // Using the articleId passed in the articleId parameter, prepare a query that finds the matching article in our db...
-//   db.Article.findOne({ _id: req.params.id })
-//     // ...and populate all of the comments associated with it
-//     .populate("comment")
-//     .then(function(dbArticle) {
-//       // If we were able to successfully find an Article with the given id, send it back to the client
-//       res.json(dbArticle);
-//     })
-//     .catch(function(error) {
-//       // If an error occurred, send it to the client
-//       res.json(error);
-//     });
-// });
-
 // Route for toggling an Article's isSaved variable state
-app.post("/articles/save-toggle", function(req, res) {
+app.put("/articles/save-toggle", function(req, res) {
   db.Article.find({"_id": req.body.articleId})
     .then(function(dbArticle) {
       // console.log("Found Article: " + dbArticle.length); //example output => 1
-      console.log("Found Article Stringify: " + JSON.stringify(dbArticle)); //example output => [{"comments":[],"_id":"5bccc9e5741b082d32bfae15","headline":"‘We are more than mercury’: The youth from a place known for poisoned land and water are sending a message","summary":"The Anishinabek community in northwestern Ontario has been famous for the wrong reasons. Now its youth are sending a message to anyone willing to listen.","category":"NEWS","subCategory":"CANADA","isSaved":true,"url":"https://www.thestar.com/news/canada/2018/10/21/we-are-more-than-mercury-the-youth-from-a-place-known-for-poisoned-land-and-water-are-sending-a-message.html","__v":0,"isaSaved":true}]
+      console.log("Found Article: " + JSON.stringify(dbArticle)); //example output => [{"comments":[],"_id":"5bccc9e5741b082d32bfae15","headline":"‘We are more than mercury’: The youth from a place known for poisoned land and water are sending a message","summary":"The Anishinabek community in northwestern Ontario has been famous for the wrong reasons. Now its youth are sending a message to anyone willing to listen.","category":"NEWS","subCategory":"CANADA","isSaved":true,"url":"https://www.thestar.com/news/canada/2018/10/21/we-are-more-than-mercury-the-youth-from-a-place-known-for-poisoned-land-and-water-are-sending-a-message.html","__v":0,"isaSaved":true}]
       // res.json(dbArticle);
       db.Article.update({"_id": req.body.articleId}, {$set: {"isSaved": !dbArticle[0].isSaved}})
         .then(function(dbArticleUpdated) {
-          console.log("\nArticle update info:" + JSON.stringify(dbArticleUpdated) + "\n");
+          console.log("\nUpdated article:" + JSON.stringify(dbArticleUpdated) + "\n");
           res.json(dbArticle);
         })
         .catch(function(error) {
@@ -230,7 +226,7 @@ app.post("/articles/save-toggle", function(req, res) {
 // Route for grabbing a specific Article's comments
 app.get("/articles/comments/:articleId", function(req, res) {
   // Using the articleId passed in the articleId parameter, prepare a query that finds the matching articleId in our db...
-  db.Article.findOne({ _id: req.params.articleId })
+  db.Article.findOne({"_id": req.params.articleId})
     // ...and populate all of the comments associated with it
     .populate("comments")
     .then(function(dbArticle) {
@@ -246,12 +242,12 @@ app.get("/articles/comments/:articleId", function(req, res) {
 
 // Route for saving a new comment for an Article
 app.post("/articles/new-comment/:articleId", function(req, res) {
-  // Create a new comment and pass the req.body.commentText to the entry
+  // Create a new comment and pass the (sanitized) req.body.commentText to the entry
   db.Comment.create({"commentText": filter.clean(req.body.commentText)})
     .then(function(dbComment) {
       // If a Comment was created successfully, find one Article with an `_id` equal to `req.params.articleId`. Update the Article to be associated with the new Comment
       // { new: true } tells the query that we want it to return the updated Article -- it returns the original by default
-      return db.Article.findOneAndUpdate({ _id: req.params.articleId }, { $push: { comments: dbComment._id } }, { new: true }).populate("comments");
+      return db.Article.findOneAndUpdate({_id: req.params.articleId}, { $push: {comments: dbComment._id} }, { new: true }).populate("comments");
     })
     .then(function(dbArticle) {
       // If we were able to successfully update an Article, send it back to the client
@@ -266,13 +262,12 @@ app.post("/articles/new-comment/:articleId", function(req, res) {
 
 // Route for deleting a comment for an Article
 app.delete("/comments/delete-comment/:articleId/:commentId", function(req, res) {
-  // Create a new comment and pass the req.body.commentText to the entry
   db.Comment.findOneAndDelete({ _id: req.params.commentId })
     .then(function(result) {
       console.log("\nDeleted the comment with id " + req.params.commentId + " associated with the article with id: " + req.params.articleId + "\n");
       // If a Comment was deleted successfully, find one Article with an `_id` equal to `req.params.articleId`. Update the Article by removing the deleted comment's id
       // { new: true } tells the query that we want it to return the updated Article -- it returns the original by default
-      return db.Article.findOneAndUpdate({ _id: req.params.articleId }, { $pull: { comments: req.params.commendId } }, {new: true}).populate("comments");
+      return db.Article.findOneAndUpdate({_id: req.params.articleId}, { $pull: {comments: req.params.commendId} }, {new: true}).populate("comments");
     })
     .then(function(dbArticle) {
       // If we were able to successfully update an Article, send it back to the client
@@ -281,13 +276,13 @@ app.delete("/comments/delete-comment/:articleId/:commentId", function(req, res) 
     })
     .catch(function(error) {
       // If an error occurred, send it to the client
+      logger.error(error);
       res.json(error);
     });
 });
 
 // Start the server
 app.listen(PORT, function() {
-  // console.log("App running on port " + PORT + "!");
   console.log(
-      "==> 🌎  Listening on port %s. Visit http://localhost:%s/ in your browser.", PORT, PORT);
+      "==> 🌎  Listening on port %s. Visit http://localhost:%s/ in your browser (if running locally).", PORT, PORT);
 });

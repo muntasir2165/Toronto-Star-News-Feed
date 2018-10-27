@@ -10,8 +10,8 @@
   }
 
   .jumbotron {
-   /*  Background fallback in case of IE8 & down, or in case video doesn't load, such as with slower connections  */
-   background: url(../images/background-1.jpg) center center no-repeat fixed #464646;
+   /*  Background fallback in case of IE8 & down, or in case the image doesn't load, such as with slower connections  */
+   background: url(../images/background.jpg) center center no-repeat fixed #464646;
 
     /*This is what makes the background image rescale based on the container's size
     Use vendor prefixes to support different browsers*/
