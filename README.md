@@ -5,7 +5,7 @@ A Nodejs web app that scrapes Toronto Star (https://www.thestar.com/) and displa
 
 This app was developed as part of the full stack MongoDB homework assignment at the University of Toronto Full Stack Web Development bootcamp. The implemenation involves usage of MongoDB for data persistance, Mongoose ODM, Node.js and Express.js for server-side code and middleware logic handling, and Handlebars for HTML templating.
 
-[App Link](https://toronto-star-news-feed.herokuapp.com/index.html)
+[App Link](https://toronto-star-news-feed.herokuapp.com/)
 
 ## Environment Setup
 1) Download and Install the latest version of [Node.js](https://nodejs.org/en/download/) on you computer.
